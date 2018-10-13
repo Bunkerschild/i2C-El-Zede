@@ -138,7 +138,7 @@ int usage(const char *name)
 
 int argument_error(const char *arg, const char *name)
 {
-    printf("Missing argument to %s\n", arg);
+    printf("Missing or invalid argument to %s\n", arg);
     usage(name);
     
     return 3;
@@ -320,7 +320,7 @@ int main (int argc, char **argv)
           position_col = col;
           position_row = row;
           
-          lcd_util->elzede_set_cursor_position(position_row-1, position_col-1);
+          lcd_util->elzede_set_cursor_position(position_row, position_col);
         }
         else if (!strcmp(argv[i], "--entry-mode"))
         {
