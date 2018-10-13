@@ -320,7 +320,7 @@ int main (int argc, char **argv)
           position_col = col;
           position_row = row;
           
-          lcd_util->elzede_set_cursor_position(position_row, position_col);
+          lcd_util->elzede_set_cursor_position(position_row, position_col-1);
         }
         else if (!strcmp(argv[i], "--entry-mode"))
         {
