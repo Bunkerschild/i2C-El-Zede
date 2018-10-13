@@ -73,6 +73,8 @@ class el_zede
     bool elzede_check_connection();
     
   public:
+    el_zede();
+    ~el_zede();
     void elzede_create(unsigned char i2c_addr, i2c_device *i2c_dev);
     void elzede_init();
     int elzede_get_error_code();

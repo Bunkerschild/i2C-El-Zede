@@ -37,7 +37,7 @@ unsigned int i2c_dev_id = 1;
 unsigned int position_row = 0;
 unsigned int position_col = 0;
 
-el_zede *lcd_util;
+el_zede *lcd_util = new el_zede;
 
 struct Table 
 {
@@ -159,10 +159,23 @@ int info()
 
 void create()
 {
-  i2c_device *lcd_device;
-  
+  i2c_device *lcd_device = new i2c_device;
+
   lcd_device->i2c_create(i2c_dev_id);
+
+  if (lcd_device->i2c_get_error_code() > 0)
+  {
+    printf("I2C-ERROR: %s\n", lcd_device->i2c_get_error_msg());
+    exit(lcd_device->i2c_get_error_code());
+  }
+  
   lcd_util->elzede_create(i2c_address, lcd_device);
+
+  if (lcd_util->elzede_get_error_code() > 0)
+  {
+    printf("LCD-ERROR: %s\n", lcd_util->elzede_get_error_msg());
+    exit(lcd_util->elzede_get_error_code());
+  }  
 }
 
 void init()

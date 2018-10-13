@@ -27,22 +27,43 @@
 
 using namespace std;
 
+i2c_device::i2c_device()
+{
+  this->i2c_connected = false;
+}
+
+i2c_device::~i2c_device()
+{
+  if (this->i2c_connected)
+    close(this->i2c_handle);
+}
+
 void i2c_device::i2c_create(int i2c_device_id)
 {
   char i2c_device_node[16] = {0};
   
+  this->i2c_connected = false;
+  
   sprintf(i2c_device_node, "/dev/i2c-%i", i2c_device_id);
 
-  char *i2c_filename = (char*)i2c_device_node;
-  
-  if ((this->i2c_handle = open(i2c_filename, O_RDWR)) < 0)
+  const char *i2c_filename = (char*)i2c_device_node;
+
+  if (access(i2c_filename, F_OK) != 0)
   {
     this->i2c_connected = false;
-    i2c_error("Unable to open I2C device.", 1);
+    i2c_error("Device inaccessible.", 9);
   }
   else
   {
-    this->i2c_connected = true;
+    if ((this->i2c_handle = open(i2c_filename, O_RDWR)) < 0)
+    {
+      this->i2c_connected = false;
+      i2c_error("Unable to open I2C device.", 1);
+    }
+    else
+    {
+      this->i2c_connected = true;
+    }
   }
 }
 

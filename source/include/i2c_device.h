@@ -38,6 +38,8 @@ class i2c_device
         bool i2c_set_address(unsigned char address);
         
     public:
+        i2c_device();
+        ~i2c_device();
         void i2c_create(int i2c_device_id);
         int i2c_get_error_code();
         char *i2c_get_error_msg();
