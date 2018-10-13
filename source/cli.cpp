@@ -32,6 +32,7 @@ bool connected = false;
 bool debug = false;
 
 unsigned int i2c_address = 0x27;
+unsigned int i2c_dev_id = 1;
 
 unsigned int position_row = 0;
 unsigned int position_col = 0;
@@ -147,7 +148,7 @@ int info()
 {
     copyright();
     
-    printf("\nI2C-address: 0x%02x (/dev/i2c-%i)\n", i2c_address, i2c_address);
+    printf("\nI2C-address: 0x%02x (/dev/i2c-%i)\n", i2c_address, i2c_dev_id);
     
     // Currently hardcoded - todo: make this flexible
     printf("LCD-Cols: %i\n", ELZEDE_COLS);
@@ -160,7 +161,7 @@ void create()
 {
   i2c_device *lcd_device;
   
-  lcd_device->i2c_create(i2c_address);
+  lcd_device->i2c_create(i2c_dev_id);
   lcd_util->elzede_create(i2c_address, lcd_device);
 }
 
@@ -214,6 +215,15 @@ int main (int argc, char **argv)
         {
            debug = true;
         }
+        else if (!strcmp(argv[i], "--device-id"))
+        {
+          i++;
+          
+          if (i >= argc)
+            return argument_error(argv[i-1], argv[0]);
+            
+          i2c_dev_id = (unsigned int)atoi(argv[i]);
+        }
         else if (!strcmp(argv[i], "--init-override"))
         {
           initialized = true;
@@ -221,7 +231,7 @@ int main (int argc, char **argv)
     }
     
     if (debug)
-        printf("DEBUGGING ENABLED\n=================\nI2C address is 0x%02x (/dev/i2c-%i)\n", i2c_address, i2c_address);
+        printf("DEBUGGING ENABLED\n=================\nI2C address is 0x%02x (/dev/i2c-%i)\n", i2c_address, i2c_dev_id);
         
     create();
     
@@ -262,7 +272,7 @@ int main (int argc, char **argv)
             i2c_address = (unsigned int)hextoint(tok);
           }
           
-          if (debug) printf("Set I2C address to 0x%02x (/dev/i2c-%i)\n", i2c_address, i2c_address);
+          if (debug) printf("Set I2C address to 0x%02x (/dev/i2c-%i)\n", i2c_address, i2c_dev_id);
         }
         else if (!strcmp(argv[i], "--set-cursor-position"))
         {
