@@ -26,7 +26,7 @@
 #include "include/i2c_device.h"
 #include "include/el_zede.h"
 
-el_zede::el_zede(unsigned char i2c_addr, i2c_device *i2c_dev)
+void el_zede::elzede_create(unsigned char i2c_addr, i2c_device *i2c_dev)
 {
   this->i2c_addr = i2c_addr;
   this->i2c_dev = i2c_dev;

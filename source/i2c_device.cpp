@@ -27,12 +27,12 @@
 
 using namespace std;
 
-i2c_device::i2c_device(int i2c_device_id)
+void i2c_device::i2c_create(int i2c_device_id)
 {
-  char i2c_device_node[12];
+  char i2c_device_node[16] = {0};
   
   sprintf(i2c_device_node, "/dev/i2c-%i", i2c_device_id);
-  
+
   char *i2c_filename = (char*)i2c_device_node;
   
   if ((this->i2c_handle = open(i2c_filename, O_RDWR)) < 0)
