@@ -48,7 +48,6 @@
 
 #define delayMicroseconds(args) usleep(args)
 #define delay(args) usleep(args * 100)
-#define print(args) printf(args)
 
 LiquidCrystal::LiquidCrystal()
 {
@@ -60,7 +59,7 @@ LiquidCrystal::LiquidCrystal()
 }
 
 inline void LiquidCrystal::write(uint8_t value) {
-	_i2cdev->i2c_write(value, Rs);
+	send(value, Rs);
 }
 
 void LiquidCrystal::init(){
@@ -261,7 +260,7 @@ void LiquidCrystal::write4bits(uint8_t value) {
 }
 
 void LiquidCrystal::expanderWrite(uint8_t _data){                                        
-	_i2cdev->i2c_write((int)(_data) | _backlightval, 0);
+	_i2cdev->i2c_write(_Addr, (int)(_data) | _backlightval);
 }
 
 void LiquidCrystal::pulseEnable(uint8_t _data){
