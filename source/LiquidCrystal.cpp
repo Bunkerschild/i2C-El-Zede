@@ -67,9 +67,14 @@ void LiquidCrystal::init(){
 	
 }
 
-void LiquidCrystal::create(uint8_t lcd_Addr, i2c_device *i2c_dev, uint8_t cols, uint8_t rows, uint8_t dotsize) {
+void LiquidCrystal::create(uint8_t lcd_Addr, i2c_device *i2c_dev, uint8_t cols, uint8_t rows, uint8_t dotsize, uint8_t mode8bit) {
 	if (rows > 1) {
 		_displayfunction |= LCD_2LINE;
+	}
+	
+	if (mode8bit > 0)
+	{
+		_displayfunction |= LCD_8BITMODE;
 	}
 	
 	_Addr = lcd_Addr;

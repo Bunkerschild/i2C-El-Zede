@@ -73,7 +73,7 @@ class LiquidCrystal
 {
 public:
   LiquidCrystal();
-  void create(uint8_t lcd_Addr, i2c_device *i2c_dev, uint8_t cols, uint8_t rows, uint8_t charsize = LCD_5x8DOTS);
+  void create(uint8_t lcd_Addr, i2c_device *i2c_dev, uint8_t cols, uint8_t rows, uint8_t charsize = LCD_5x8DOTS, uint8_t mode8bit = 0);
   void clear();
   void home();
   void noDisplay();

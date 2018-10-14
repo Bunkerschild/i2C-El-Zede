@@ -37,6 +37,7 @@ unsigned int i2c_dev_id = 1;
 unsigned int display_cols = 20;
 unsigned int display_rows = 4;
 unsigned int display_dotsize = LCD_5x8DOTS;
+unsigned int display_8bitmode = 0;
 
 LiquidCrystal *lcd_util = new LiquidCrystal;
 
@@ -159,7 +160,7 @@ void create()
     exit(lcd_device->i2c_get_error_code());
   }
   
-  lcd_util->create(i2c_address, lcd_device, display_cols, display_rows, display_dotsize);
+  lcd_util->create(i2c_address, lcd_device, display_cols, display_rows, display_dotsize, display_8bitmode);
 }
 
 void init()
@@ -197,6 +198,12 @@ int help(const char *name)
   printf("=====================================================================\n");
   printf(" --device-id <ID>                    Set the I2C device ID - defaults to 1\n");
   printf(" --i2c-address <VAL>                 I2C address as integer or hex - defaults to 0x27\n\n");
+  printf("The following switches are used to set LCD dimensions:\n");
+  printf("=====================================================================\n");
+  printf(" --lcd-rows <rows>                   Set rows of LCD - defaults to 4\n");
+  printf(" --lcd-cols <cols>                   Set cols of LCD - defaults to 20\n");
+  printf(" --lcd-dotsize-5x10                  Set dotsize of LCD to 5x10 - defaults to 5x8\n");
+  printf(" --lcd-8bit-mode                     Set LCD 8 bit mode - defaults to 4 bit\n\n");
   printf("The following switches are sequencable used to control the LCD behaviour:\n");
   printf("=========================================================================\n");
   printf(" --wait <ms>                         Waittime in ms until next switch is used\n");
@@ -285,6 +292,32 @@ int main (int argc, char **argv)
         else if (!strcmp(argv[i], "--no-init"))
         {
           initialized = true;
+        }
+        else if (!strcmp(argv[i], "--lcd-rows"))
+        {
+          i++;
+          
+          if (i >= argc)
+            return argument_error(argv[i-1], argv[0]);
+            
+          display_rows = (unsigned int)atoi(argv[i]);
+        }
+        else if (!strcmp(argv[i], "--lcd-cols"))
+        {
+          i++;
+          
+          if (i >= argc)
+            return argument_error(argv[i-1], argv[0]);
+            
+          display_cols = (unsigned int)atoi(argv[i]);
+        }
+        else if (!strcmp(argv[i], "--lcd-dotsize-5x10"))
+        {
+          display_dotsize = LCD_5x10DOTS;
+        }
+        else if (!strcmp(argv[i], "--lcd-8bit-mode"))
+        {
+          display_8bitmode = 1;
         }
     }
     
