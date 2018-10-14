@@ -126,6 +126,7 @@ void LiquidCrystal::create(uint8_t lcd_Addr, i2c_device *i2c_dev, uint8_t cols, 
 	_rows = rows;
 	_numlines = rows;
 	_i2cdev = i2c_dev;
+	_is5x10dotsize = dotsize;
 
 	// for some 1 line displays you can select a 10 pixel high font
 	if ((dotsize != 0) && (rows == 1)) {
@@ -219,7 +220,7 @@ void LiquidCrystal::noAutoscroll(void) {
 void LiquidCrystal::createChar(uint8_t location, uint8_t charmap[]) {
 	location &= 0x7; // we only have 8 locations 0-7
 	command(LCD_SETCGRAMADDR | (location << 3));
-	for (int i=0; i<8; i++) {
+	for (int i=0; i<((_is5x10dotsize) ? 10 : 8); i++) {
 		write(charmap[i]);
 	}
 }

@@ -471,6 +471,43 @@ int main (int argc, char **argv)
         else if (!strcmp(argv[i], "--create-char"))
         {
           unsigned int id = 0;
+          unsigned int chr = 0;
+          
+          int k = 0;
+          uint8_t charmap[10];
+          
+          i++;
+          
+          if (i >= argc)
+            return argument_error(argv[i-1], argv[0]);
+            
+          id = (unsigned int)atoi(argv[i]);
+          
+          for (int n = 0; n < ((display_dotsize == LCD_5x8DOTS) ? 8 : 10); n++)
+          {
+            k = i + n + 1;
+            
+            if (k >= argc)
+              return argument_error(argv[i-1], argv[0]);
+              
+            char *tok = strtok(argv[k], "x");
+            tok = strtok(NULL, "x");
+            
+            if (!tok)
+            {
+              chr = (unsigned int)atoi(argv[k]);
+            }
+            else
+            {
+              chr = (unsigned int)hextoint(tok);
+            }
+            
+            charmap[n] = (uint8_t)chr;
+          }
+          
+          i += k;
+          
+          lcd_util->createChar(id, charmap);
           
           if (debug) printf("Create character at ID %i\n", id);
         }
@@ -534,9 +571,9 @@ int main (int argc, char **argv)
             
           str = (char *)argv[i];
           
-          for (int i = 0; i < strlen(str); i++)
+          for (int n = 0; n < strlen(str); n++)
           {
-            chr = (unsigned int)str[i];
+            chr = (unsigned int)str[n];
             lcd_util->write(chr);
           }
           
