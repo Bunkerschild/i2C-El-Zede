@@ -54,7 +54,7 @@ LiquidCrystal::LiquidCrystal()
   _Addr = 0;
   _cols = 0;
   _rows = 0;
-  _backlightval = LCD_NOBACKLIGHT;
+  _backlightval = LCD_BACKLIGHT;
   _displayfunction = LCD_4BITMODE | LCD_1LINE | LCD_5x8DOTS;
 }
 
@@ -67,9 +67,10 @@ void LiquidCrystal::init(){
 	// according to datasheet, we need at least 40ms after power rises above 2.7V
 	// before sending commands. Arduino can turn on way befer 4.5V so we'll wait 50
 	delay(50); 
-  
+	uint8_t backlightval = LCD_NOBACKLIGHT;
+	
 	// Now we pull both RS and R/W low to begin commands
-	expanderWrite(_backlightval);	// reset expanderand turn backlight off (Bit 8 =1)
+	expanderWrite(backlightval);	// reset expanderand turn backlight off (Bit 8 =1)
 	delay(1000);
 
   	//put the LCD into 4 bit mode
