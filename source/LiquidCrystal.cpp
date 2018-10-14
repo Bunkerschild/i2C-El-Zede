@@ -77,21 +77,20 @@ void LiquidCrystal::init(){
 	// this is according to the hitachi HD44780 datasheet
 	// figure 24, pg 46
 	
-	  // we start in 8bit mode, try to set 4 bit mode
-   write4bits(0x03 << 4);
-   delayMicroseconds(4500); // wait min 4.1ms
+	// we start in 8bit mode, try to set 4 bit mode
+        write4bits(0x03 << 4);
+        delayMicroseconds(4500); // wait min 4.1ms
    
-   // second try
-   write4bits(0x03 << 4);
-   delayMicroseconds(4500); // wait min 4.1ms
+        // second try
+        write4bits(0x03 << 4);
+        delayMicroseconds(4500); // wait min 4.1ms
    
-   // third go!
-   write4bits(0x03 << 4); 
-   delayMicroseconds(150);
+        // third go!
+        write4bits(0x03 << 4); 
+        delayMicroseconds(150);
    
-   // finally, set to 4-bit interface
-   write4bits(0x02 << 4); 
-
+        // finally, set to 4-bit interface
+        write4bits(0x02 << 4); 
 
 	// set # lines, font size, etc.
 	command(LCD_FUNCTIONSET | _displayfunction);  
@@ -146,7 +145,7 @@ void LiquidCrystal::home(){
 }
 
 void LiquidCrystal::setCursor(uint8_t col, uint8_t row){
-	int row_offsets[] = { 0x00, 0x40, 0x14, 0x54 };
+	int row_offsets[] = { 0x00, 0x14, 0x40, 0x54 };
 	if ( row > _numlines ) {
 		row = _numlines-1;    // we count rows starting w/0
 	}
