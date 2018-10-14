@@ -47,7 +47,7 @@
 // LiquidCrystal constructor is called).
 
 #define delayMicroseconds(args) usleep(args)
-#define delay(args) usleep(args * 100)
+#define delay(args) usleep(args * 1000)
 
 LiquidCrystal::LiquidCrystal()
 {

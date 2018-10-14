@@ -190,10 +190,9 @@ int help(const char *name)
   printf(" --license                           Show license context\n");
   printf(" --info                              Show information about configured defaults\n");
   printf(" --debug                             Enable debugging information to STDOUT\n\n");
-  printf("Only one of the following switches is required as the first argument:\n");
-  printf("=====================================================================\n");
-  printf(" --initialize                        Initialize LCD after connecting to I2C bus\n");
-  printf(" --no-init                           Do not initialize LCD after connection\n\n");
+  printf("The following switch is required as the first argument, if required:\n");
+  printf("====================================================================\n");
+  printf(" --initialize                        Initialize LCD after connecting to I2C bus\n\n");
   printf("The following switches are used to set I2C device ID and LCD address:\n");
   printf("=====================================================================\n");
   printf(" --device-id <ID>                    Set the I2C device ID - defaults to 1\n");
@@ -289,10 +288,6 @@ int main (int argc, char **argv)
             
           i2c_dev_id = (unsigned int)atoi(argv[i]);
         }
-        else if (!strcmp(argv[i], "--no-init"))
-        {
-          initialized = true;
-        }
         else if (!strcmp(argv[i], "--lcd-rows"))
         {
           i++;
@@ -326,9 +321,6 @@ int main (int argc, char **argv)
         
     create();
     
-    if (debug && initialized)          
-        printf("Initialization override - marked as initialized\n");
-          
     for (i = 1; i < argc; i++)
     {
         if (!strcmp(argv[i], "--initialize"))
@@ -378,7 +370,7 @@ int main (int argc, char **argv)
           
           if (debug) printf("Wait %i ms\n", ms);
           
-          usleep(ms);
+          usleep(ms * 1000);
         }
         else if (!strcmp(argv[i], "--clear"))
         {

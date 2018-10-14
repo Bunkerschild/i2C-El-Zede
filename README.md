@@ -13,11 +13,10 @@ The following switches are used for informational purposes:
  --debug                             Enable debugging information to STDOUT
 
 </pre>
-Only one of the following switches is required as the first argument:
-=====================================================================
+The following switch is required as the first argument, if required:
+====================================================================
 <pre>
  --initialize                        Initialize LCD after connecting to I2C bus
- --no-init                           Do not initialize LCD after connection
 
 </pre>
 The following switches are used to set I2C device ID and LCD address:
