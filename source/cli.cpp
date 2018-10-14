@@ -322,7 +322,7 @@ int main (int argc, char **argv)
     }
     
     if (debug)
-        printf("DEBUGGING ENABLED\n=================\nI2C address is 0x%02x (/dev/i2c-%i)\n", i2c_address, i2c_dev_id);
+        printf("DEBUGGING ENABLED\n=================\nI2C address is 0x%02x @ /dev/i2c-%i\nLCD size %ix%i, DOT size %s, in %i bit mode\n", i2c_address, i2c_dev_id, display_cols, display_rows, ((display_dotsize == LCD_5x8DOTS) ? (char *)"5x8" : (char *)"5x10"), ((display_8bitmode) ? 8 : 4));
         
     create();
     
