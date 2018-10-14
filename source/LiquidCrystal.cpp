@@ -64,30 +64,6 @@ inline void LiquidCrystal::write(uint8_t value) {
 }
 
 void LiquidCrystal::init(){
-	
-}
-
-void LiquidCrystal::create(uint8_t lcd_Addr, i2c_device *i2c_dev, uint8_t cols, uint8_t rows, uint8_t dotsize, uint8_t mode8bit) {
-	if (rows > 1) {
-		_displayfunction |= LCD_2LINE;
-	}
-	
-	if (mode8bit > 0)
-	{
-		_displayfunction |= LCD_8BITMODE;
-	}
-	
-	_Addr = lcd_Addr;
-	_cols = cols;
-	_rows = rows;
-	_numlines = rows;
-	_i2cdev = i2c_dev;
-
-	// for some 1 line displays you can select a 10 pixel high font
-	if ((dotsize != 0) && (rows == 1)) {
-		_displayfunction |= LCD_5x10DOTS;
-	}
-
 	// SEE PAGE 45/46 FOR INITIALIZATION SPECIFICATION!
 	// according to datasheet, we need at least 40ms after power rises above 2.7V
 	// before sending commands. Arduino can turn on way befer 4.5V so we'll wait 50
@@ -133,8 +109,29 @@ void LiquidCrystal::create(uint8_t lcd_Addr, i2c_device *i2c_dev, uint8_t cols, 
 	// set the entry mode
 	command(LCD_ENTRYMODESET | _displaymode);
 	
-	home();
-  
+	home();	
+}
+
+void LiquidCrystal::create(uint8_t lcd_Addr, i2c_device *i2c_dev, uint8_t cols, uint8_t rows, uint8_t dotsize, uint8_t mode8bit) {
+	if (rows > 1) {
+		_displayfunction |= LCD_2LINE;
+	}
+	
+	if (mode8bit > 0)
+	{
+		_displayfunction |= LCD_8BITMODE;
+	}
+	
+	_Addr = lcd_Addr;
+	_cols = cols;
+	_rows = rows;
+	_numlines = rows;
+	_i2cdev = i2c_dev;
+
+	// for some 1 line displays you can select a 10 pixel high font
+	if ((dotsize != 0) && (rows == 1)) {
+		_displayfunction |= LCD_5x10DOTS;
+	}
 }
 
 /********** high level commands, for the user! */
