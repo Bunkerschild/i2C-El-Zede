@@ -25,7 +25,7 @@
 #include <math.h>
 
 #include "include/i2c_device.h"
-#include "include/el_zede.h"
+#include "include/LiquidCrystal.h"
 
 bool initialized = false;
 bool connected = false;
@@ -34,10 +34,11 @@ bool debug = false;
 unsigned int i2c_address = 0x27;
 unsigned int i2c_dev_id = 1;
 
-unsigned int position_row = 0;
-unsigned int position_col = 0;
+unsigned int display_cols = 20;
+unsigned int display_rows = 4;
+unsigned int display_dotsize = LCD_5x8DOTS;
 
-el_zede *lcd_util = new el_zede;
+LiquidCrystal *lcd_util = new LiquidCrystal;
 
 struct Table 
 {
@@ -107,13 +108,6 @@ void copyright()
     printf("i2C-El-Zede - Copyright (C) 2018 Oliver Welter <info@bunkerschild.de>\n");
 }
 
-int help()
-{
-    printf("CURRENTLY NO HELP IMPLEMENTED, YET :-(\n");
-    
-    return 2;
-}
-
 void gpl()
 {
     printf("This program is free software: you can redistribute it and/or modify\n");
@@ -150,10 +144,6 @@ int info()
     
     printf("\nI2C-address: 0x%02x (/dev/i2c-%i)\n", i2c_address, i2c_dev_id);
     
-    // Currently hardcoded - todo: make this flexible
-    printf("LCD-Cols: %i\n", ELZEDE_COLS);
-    printf("LCD-Rows: %i\n", ELZEDE_ROWS);
-    
     return 4;
 }
 
@@ -169,21 +159,12 @@ void create()
     exit(lcd_device->i2c_get_error_code());
   }
   
-  lcd_util->elzede_create(i2c_address, lcd_device);
-
-  if (lcd_util->elzede_get_error_code() > 0)
-  {
-    printf("LCD-ERROR: %s\n", lcd_util->elzede_get_error_msg());
-    exit(lcd_util->elzede_get_error_code());
-  }  
+  lcd_util->create(i2c_address, lcd_device, display_cols, display_rows, display_dotsize);
 }
 
 void init()
 {  
-  position_row = 1;
-  position_col = 1;
-  
-  lcd_util->elzede_init();
+  lcd_util->init();
   
   initialized = true;
 }
@@ -193,6 +174,72 @@ int uninitialized()
   printf("ERROR: You cannot use this argument, if LCD is uninitialized\n");
   
   return 6;
+}
+
+int help(const char *name)
+{    
+  printf("This tool is designed to be an interface for use with\n");
+  printf("I2C DOT matrix displays, like 20x4, typically used in\n");
+  printf("conjunction with arduino like boards. It makes it possible\n");
+  printf("to control compatible displays from the command line,\n");
+  printf("directly attached to the computers I2C bus.\n\n");
+  printf("The following switches are used for informational purposes:\n");
+  printf("===========================================================\n");
+  printf(" --help                              Show this help context\n");
+  printf(" --license                           Show license context\n");
+  printf(" --info                              Show information about configured defaults\n");
+  printf(" --debug                             Enable debugging information to STDOUT\n\n");
+  printf("Only one of the following switches is required as the first argument:\n");
+  printf("=====================================================================\n");
+  printf(" --initialize                        Initialize LCD after connecting to I2C bus\n");
+  printf(" --no-init                           Do not initialize LCD after connection\n\n");
+  printf("The following switches are used to set I2C device ID and LCD address:\n");
+  printf("=====================================================================\n");
+  printf(" --device-id <ID>                    Set the I2C device ID - defaults to 1\n");
+  printf(" --i2c-address <VAL>                 I2C address as integer or hex - defaults to 0x27\n\n");
+  printf("The following switches are sequencable used to control the LCD behaviour:\n");
+  printf("=========================================================================\n");
+  printf(" --wait <ms>                         Waittime in ms until next switch is used\n");
+  printf(" --clear                             Clear LCD screen\n");
+  printf(" --home                              Set cursor to row 1 and column 1\n");
+  printf(" --display                           Display content in RAM\n");
+  printf(" --no-display                        Hide display content\n");
+  printf(" --blink                             Let the cursor blink\n");
+  printf(" --no-blink                          Stop cursor blinking\n");
+  printf(" --cursor                            Display cursor\n");
+  printf(" --no-cursor                         Hide cursor\n");
+  printf(" --scroll-display-left               Scroll display content to the left\n");
+  printf(" --scroll-display-right              Scroll display content to the right\n");
+  printf(" --left-to-right                     Character direction left to right\n");
+  printf(" --right-to-left                     Character direction right to left\n");
+  printf(" --backlight                         Enable display backlight\n");
+  printf(" --no-backlight                      Disable display backlight\n");
+  printf(" --autoscroll                        Enable autoscrolling of content\n");
+  printf(" --no-autoscroll                     Disable autoscrolling of content\n");
+  printf(" --create-char <ID> <VAL,VAL,...>    Create a character in hex or integer values at ID\n");
+  printf(" --set-cursor <row> <column>         Place cursor for next character at row and column\n");
+  printf(" --write <VAL>                       Write character as integer or hex at current position\n");
+  printf(" --print-str <string>                Print a string to current cursor position\n\n");
+  printf("Examples:\n");
+  printf("=========\n");
+  printf("$ %s --initialize --print-str \"I love Hello World examples\"\n\n", name);
+  printf("On a 20x4 LCD it will result in:\n");
+  printf("+--------------------+\n");
+  printf("|I love Hello World e|\n");
+  printf("|xamples             |\n");
+  printf("|                    |\n");
+  printf("|                    |\n");
+  printf("+--------------------+\n\n");
+  printf("$ %s --no-init --set-cursor 4 3 --print-str \"STUFF\" --set-cursor 3 6 --print-str \"COOL\"\n\n", name);
+  printf("as a second command will result in:\n");
+  printf("+--------------------+\n");
+  printf("|I love Hello World e|\n");
+  printf("|xamples             |\n");
+  printf("|     COOL           |\n");
+  printf("|  STUFF             |\n");
+  printf("+--------------------+\n\n");  
+  copyright();
+  return 2;
 }
 
 int main (int argc, char **argv)
@@ -210,9 +257,7 @@ int main (int argc, char **argv)
     {
         if (!strcmp(argv[i], "--help"))
         {
-           copyright();
-           
-           return help();
+           return help(argv[0]);
         }
         else if (!strcmp(argv[i], "--license"))
         {
@@ -237,7 +282,7 @@ int main (int argc, char **argv)
             
           i2c_dev_id = (unsigned int)atoi(argv[i]);
         }
-        else if (!strcmp(argv[i], "--init-override"))
+        else if (!strcmp(argv[i], "--no-init"))
         {
           initialized = true;
         }
@@ -287,11 +332,125 @@ int main (int argc, char **argv)
           
           if (debug) printf("Set I2C address to 0x%02x (/dev/i2c-%i)\n", i2c_address, i2c_dev_id);
         }
-        else if (!strcmp(argv[i], "--set-cursor-position"))
+        else if (!strcmp(argv[i], "--wait"))
         {
-          if (!initialized)
-            return uninitialized();
+          unsigned int ms = 0;
           
+          i++;
+          
+          if (i >= argc)
+            return argument_error(argv[i-1], argv[0]);
+            
+          ms = (unsigned int)atoi(argv[i]);
+          
+          if (debug) printf("Wait %i ms\n", ms);
+          
+          usleep(ms);
+        }
+        else if (!strcmp(argv[i], "--clear"))
+        {
+          lcd_util->clear();
+          
+          if (debug) printf("Clear display\n");
+        }
+        else if (!strcmp(argv[i], "--home"))
+        {
+          lcd_util->home();
+          
+          if (debug) printf("Home position\n");
+        }
+        else if (!strcmp(argv[i], "--display"))
+        {
+          lcd_util->display();
+          
+          if (debug) printf("Display content in RAM\n");
+        }
+        else if (!strcmp(argv[i], "--no-display"))
+        {
+          lcd_util->noDisplay();
+          
+          if (debug) printf("Hide display content\n");
+        }
+        else if (!strcmp(argv[i], "--blink"))
+        {
+          lcd_util->blink();
+          
+          if (debug) printf("Set blink on\n");
+        }
+        else if (!strcmp(argv[i], "--no-blink"))
+        {
+          lcd_util->noBlink();
+          
+          if (debug) printf("Set blink off\n");
+        }
+        else if (!strcmp(argv[i], "--cursor"))
+        {
+          lcd_util->cursor();
+          
+          if (debug) printf("Set cursor on\n");
+        }
+        else if (!strcmp(argv[i], "--no-cursor"))
+        {
+          lcd_util->noCursor();
+          
+          if (debug) printf("Set cursor off\n");
+        }
+        else if (!strcmp(argv[i], "--scroll-display-left"))
+        {
+          lcd_util->scrollDisplayLeft();
+          
+          if (debug) printf("Scroll display to the left\n");
+        }
+        else if (!strcmp(argv[i], "--scroll-display-right"))
+        {
+          lcd_util->scrollDisplayRight();
+          
+          if (debug) printf("Scroll display to the right\n");
+        }
+        else if (!strcmp(argv[i], "--left-to-right"))
+        {
+          lcd_util->leftToRight();
+          
+          if (debug) printf("Left to right mode\n");
+        }
+        else if (!strcmp(argv[i], "--right-to-left"))
+        {
+          lcd_util->rightToLeft();
+          
+          if (debug) printf("Right to left mode\n");
+        }
+        else if (!strcmp(argv[i], "--backlight"))
+        {
+          lcd_util->backlight();
+          
+          if (debug) printf("Backlight on\n");
+        }
+        else if (!strcmp(argv[i], "--no-backlight"))
+        {
+          lcd_util->noBacklight();
+          
+          if (debug) printf("Backlight off\n");
+        }
+        else if (!strcmp(argv[i], "--autoscroll"))
+        {
+          lcd_util->autoscroll();
+          
+          if (debug) printf("Autoscroll on\n");
+        }
+        else if (!strcmp(argv[i], "--no-autoscroll"))
+        {
+          lcd_util->noAutoscroll();
+          
+          if (debug) printf("Autoscroll off\n");
+        }
+        else if (!strcmp(argv[i], "--create-char"))
+        {
+          unsigned int id = 0;
+          
+          if (debug) printf("Create character at ID %i\n", id);
+        }
+        else if (!strcmp(argv[i], "--set-cursor"))
+        {
           unsigned int row = 0;
           unsigned int col = 0;
           
@@ -301,7 +460,7 @@ int main (int argc, char **argv)
             return argument_error(argv[i-1], argv[0]);
             
           row = (unsigned int)atoi(argv[i]);
-
+          
           i++;
           
           if (i >= argc)
@@ -309,234 +468,54 @@ int main (int argc, char **argv)
             
           col = (unsigned int)atoi(argv[i]);
           
-          if (col > ELZEDE_COLS)
-            return argument_error(argv[i-2], argv[0]);
+          lcd_util->setCursor(row, col);
           
-          if (row > ELZEDE_ROWS)
-            return argument_error(argv[i-2], argv[0]);
-            
-          if (debug) printf("Set cursor position to row %i and col %i\n", row, col);
-          
-          position_col = col;
-          position_row = row;
-          
-          lcd_util->elzede_set_cursor_position(position_row, position_col-1);
+          if (debug) printf("Set cursor to row %i and column %i\n", row, col);
         }
-        else if (!strcmp(argv[i], "--entry-mode"))
+        else if (!strcmp(argv[i], "--write"))
         {
-          if (!initialized)
-            return uninitialized();
-            
-          if (debug) printf("Set entry mode\n");
-            
-          lcd_util->elzede_entry_mode();
-        }
-        else if (!strcmp(argv[i], "--backlight-off"))
-        {
-          if (!initialized)
-            return uninitialized();
-            
-          if (debug) printf("Set backlight off\n");
+          unsigned int chr = 0;
           
-          lcd_util->elzede_backlight_off();
-        }
-        else if (!strcmp(argv[i], "--backlight-on"))
-        {
-          if (!initialized)
-            return uninitialized();
+          i++;
+          
+          if (i >= argc)
+            return argument_error(argv[i-1], argv[0]);
+          
+          char *tok = strtok(argv[i], "x");
+          tok = strtok(NULL, "x");
             
-          if (debug) printf("Set backlight on\n");
-          
-          lcd_util->elzede_backlight_on();
-        }
-        else if (!strcmp(argv[i], "--scroll-lcd-right"))
-        {
-          if (!initialized)
-            return uninitialized();
-            
-          if (debug) printf("Set scroll LCD right\n");
-          
-          lcd_util->elzede_scroll_lcd_right();
-        }
-        else if (!strcmp(argv[i], "--scroll-lcd-left"))
-        {
-          if (!initialized)
-            return uninitialized();
-            
-          if (debug) printf("Set scroll LCD left\n");
-          
-          lcd_util->elzede_scroll_lcd_left();
-        }
-        else if (!strcmp(argv[i], "--cursor-pos-reset"))
-        {
-          if (!initialized)
-            return uninitialized();
-            
-          if (debug) printf("Set cursor position reset\n");
-          
-          position_row = 1;
-          position_col = 1;
-          
-          lcd_util->elzede_cursor_pos_reset();
-        }
-        else if (!strcmp(argv[i], "--cursor-move-left"))
-        {
-          if (!initialized)
-            return uninitialized();
-            
-          unsigned int col = position_col;
-          unsigned int row = position_row;
-          
-          col--;
-          
-          if (col == 0)
+          if (!tok)
           {
-            col = ELZEDE_COLS;
-            row--;
-            
-            if (row == 0)
-            {
-              row = ELZEDE_ROWS;
-            }
+            chr = (unsigned int)atoi(argv[i]);
           }
-            
-          if (debug) printf("Set cursor move left to col %i and row %i\n", col, row);
-          
-          position_row = row;
-          position_col = col;
-          
-          lcd_util->elzede_cursor_move_left();
-        }
-        else if (!strcmp(argv[i], "--cursor-move-right"))
-        {
-          if (!initialized)
-            return uninitialized();
-            
-          unsigned int col = position_col;
-          unsigned int row = position_row;
-          
-          col++;
-          
-          if (col == (ELZEDE_COLS + 1))
+          else
           {
-            col = 1;
-            row++;
-            
-            if (row == (ELZEDE_ROWS + 1))
-            {
-              row = 1;
-            }
+            chr = (unsigned int)hextoint(tok);
           }
-            
-          if (debug) printf("Set cursor move left to col %i and row %i\n", col, row);
           
-          position_row = row;
-          position_col = col;
-          
-          lcd_util->elzede_cursor_move_right();
+          lcd_util->write(chr);
+                    
+          if (debug) printf("Print character 0x%02x\n", chr);
         }
-        else if (!strcmp(argv[i], "--cursor-off"))
+        else if (!strcmp(argv[i], "--print-str"))
         {
-          if (!initialized)
-            return uninitialized();
-            
-          if (debug) printf("Set cursor off\n");
+          char *str = {0};
+          unsigned int chr = 0;
           
-          lcd_util->elzede_cursor_off();
-        }
-        else if (!strcmp(argv[i], "--cursor-underline"))
-        {
-          if (!initialized)
-            return uninitialized();
-            
-          if (debug) printf("Set cursor underline\n");
-          
-          lcd_util->elzede_cursor_underline();
-        }
-        else if (!strcmp(argv[i], "--cursor-blink"))
-        {
-          if (!initialized)
-            return uninitialized();
-            
-          if (debug) printf("Set cursor blink\n");
-          
-          lcd_util->elzede_cursor_blink();
-        }
-        else if (!strcmp(argv[i], "--mode-8-bit"))
-        {
-          if (!initialized)
-            return uninitialized();
-            
-          if (debug) printf("Set mode 8 bit\n");
-          
-          lcd_util->elzede_mode_8_bit();
-        }
-        else if (!strcmp(argv[i], "--mode-4-bit"))
-        {
-          if (!initialized)
-            return uninitialized();
-            
-          if (debug) printf("Set mode 4 bit\n");
-          
-          lcd_util->elzede_mode_4_bit();
-        }
-        else if (!strcmp(argv[i], "--clear-lcd-only"))
-        {
-          if (!initialized)
-            return uninitialized();
-            
-          if (debug) printf("Set clear LCD only\n");
-          
-          lcd_util->elzede_clear_lcd_only();
-        }
-        else if (!strcmp(argv[i], "--clear-lcd-and-ram"))
-        {
-          if (!initialized)
-            return uninitialized();
-            
-          if (debug) printf("Set clear LCD and RAM\n");
-          
-          lcd_util->elzede_clear_lcd_and_ram();
-        }
-        else if (!strcmp(argv[i], "--string"))
-        {
-          if (!initialized)
-            return uninitialized();
-            
           i++;
           
           if (i >= argc)
             return argument_error(argv[i-1], argv[0]);
             
-          const char *str = (char *)argv[i];
-            
-          if (debug) printf("Set string: %s\n", str);
-          
-          unsigned int row = position_row;
-          unsigned int col = position_col;
+          str = (char *)argv[i];
           
           for (int i = 0; i < strlen(str); i++)
           {
-            col++;
-            
-            if (col == (ELZEDE_COLS + 1))
-            {
-              col = 1;
-              row++;
-              
-              if (row == (ELZEDE_ROWS + 1))
-              {
-                row = 1;
-              }
-            }
+            chr = (unsigned int)str[i];
+            lcd_util->write(chr);
           }
           
-          if (debug) printf("New cursor position is at col %i and row %i\n", col, row);
-          
-          position_row = row;
-          position_col = col;
-          
-          lcd_util->elzede_string(argv[i]);
+          if (debug) printf("Print string: '%s'\n", str);
         }
     }
 }
